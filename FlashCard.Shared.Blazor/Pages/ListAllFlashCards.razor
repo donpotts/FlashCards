@@ -1,0 +1,166 @@
+@page "/allflashcards"
+@inject AppService AppService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject HttpClient HttpClient
+@attribute [Authorize]
+
+<PageTitle>Flash Cards</PageTitle>
+
+<div class="mb-3">
+    <MudText Typo="Typo.h3">Flash Cards</MudText>
+</div>
+
+<MudStack AlignItems="AlignItems.End" Class="mb-3">
+    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Primary" OnClick="@(e => OnAdd())">Add</MudButton>
+</MudStack>
+
+<!-- Begin cards -->
+@if (FlashCardsResult != null)
+{
+    <MudText Class="mt-6 mb-3" Typo="Typo.h5">Cards</MudText>
+    <MudGrid Class="mb-3">
+        @foreach (var FlashCards in FlashCardsResult.Value ?? Enumerable.Empty<FlashCards>())
+        {
+            var thisFlashCards = FlashCards;
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudCard Class="d-flex flex-column mud-height-full">
+                    <MudCardContent>
+                        @* <MudText Typo="Typo.body2"><strong>Id:</strong> @FlashCards.Id</MudText> *@
+                        <MudText Typo="Typo.h6" Class="mb-2">@FlashCards.FlashCardDecks?.Name</MudText>
+                        @if (showQuestion)
+                        {
+                            <MudText Typo="Typo.h4" Style="width: 300px; height: 200px; overflow: auto;">@FlashCards.Question</MudText>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="ToggleProperty">Show Answer</MudButton>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.h6" Style="width: 300px; height: 200px; overflow: auto;">@FlashCards.Answer</MudText>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="ToggleProperty">Show Question</MudButton>
+                        }
+                        @* <MudText Typo="Typo.body2" Class="mb-2"><strong>FlashCardScoring:</strong> @FlashCards.FlashCardScoring?.Id</MudText> *@
+                    </MudCardContent>
+                    <MudCardActions Class="mt-auto">
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnEdit(thisFlashCards))">Edit</MudButton>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnDelete(thisFlashCards))">Delete</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+
+    <div class="d-flex align-center justify-center mb-3">
+        <MudPagination Color="Color.Primary" Count="pageCount" Selected="selectedPage" SelectedChanged="OnSelectedChangedAsync" />
+    </div>
+}
+
+<!-- End cards -->
+
+@code {
+    private bool showQuestion = true;
+    // Begin cards
+     private const int PageSize = 10;
+     private AppService.ODataResult<FlashCards>? FlashCardsResult;
+     private int pageCount = 1;
+     private int selectedPage = 1;
+
+     protected override async Task OnInitializedAsync()
+     {
+         await ReloadDataAsync();
+     }
+
+     private async Task OnSelectedChangedAsync(int selected)
+     {
+         selectedPage = selected;
+         await ReloadDataAsync();
+     }
+
+     private async Task ReloadDataAsync()
+     {
+         var skip = (selectedPage - 1) * PageSize;
+
+         FlashCardsResult = await AppService.ListFlashCardsODataAsync(PageSize, skip, "", "", count: true, "FlashCardDecks,FlashCardScoring");
+
+         if (FlashCardsResult?.Count.HasValue ?? false)
+         {
+             pageCount = (int)Math.Ceiling((double)FlashCardsResult.Count.Value / PageSize);
+         }
+         else
+         {
+             pageCount = 1;
+         }
+         StateHasChanged();
+     }
+     // End cards
+
+    private string GetAbsoluteUri(string uri)
+    {
+        if (!uri.StartsWith("/"))
+        {
+            return uri;
+        }
+
+        var baseUri = HttpClient.BaseAddress;
+
+        if (baseUri == null)
+        {
+            throw new Exception("Unable to determine base address");
+        }
+
+        Uri absolute = new(baseUri, uri);
+
+        return absolute.ToString();
+    }
+
+    private async void OnAdd()
+    {
+        DialogOptions dialogOptions = new() { FullWidth = true, CloseOnEscapeKey = true };
+
+        var result = await DialogService.Show<AddFlashCards>("Add FlashCards", dialogOptions).Result;
+
+        if (!result.Canceled)
+        {
+            await ReloadDataAsync();
+        }
+    }
+
+    private async void OnEdit(FlashCards record)
+    {
+        DialogParameters<UpdateFlashCards> dialogParams = new() { { x => x.Id, record.Id!.Value } };
+        DialogOptions dialogOptions = new() { FullWidth = true, CloseOnEscapeKey = true };
+
+        var result = await DialogService.Show<UpdateFlashCards>("Update FlashCards", dialogParams, dialogOptions).Result;
+
+        if (!result.Canceled)
+        {
+            await ReloadDataAsync();
+        }
+    }
+
+    private async void OnDelete(FlashCards record)
+    {
+        var result = await DialogService.ShowMessageBox(
+            "Warning",
+            "Are you sure you want to delete this record?",
+            "Delete",
+            "Cancel");
+
+        if (result.GetValueOrDefault(false))
+        {
+            try
+            {
+                await AppService.DeleteFlashCardsAsync(record.Id!.Value);
+                await ReloadDataAsync();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add(ex.Message, Severity.Error);
+            }
+        }
+    }
+
+    private void ToggleProperty()
+    {
+        showQuestion = !showQuestion;
+    }
+}

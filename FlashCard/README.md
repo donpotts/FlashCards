@@ -1,7 +1,7 @@
 # Blazor Flash Cards
 Blazor Flash Cards WASM application using MudBlazor
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/donpotts/FlashCards/BlazorFlashCards.yml?logo=github)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/donpotts/FlashCards/FlashCards.yml?logo=github)
 
 ## Overview
 
@@ -11,7 +11,7 @@ This repository contains an ASP.NET Core application with a Blazor WebAssembly (
 
 - ASP.NET Core Kestrel web server: A robust and high-performance server.
 - Blazor WASM UI: A modern web UI framework for .NET.
-- MudBlazor components: Using side or top navigation.
+- MudBlazor conponents: Using side or top navigation.
 - Swagger UI: An interactive documentation for your API.
 - ASP.NET Core 8 Identity: A membership system that adds login functionality to your application.
 - Entity Framework Core SQLite: A lightweight database provider for Entity Framework Core.

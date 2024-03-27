@@ -1,0 +1,14 @@
+[
+  {
+    "Id": 1,
+    "Name": "C#"
+  },
+  {
+    "Id": 2,
+    "Name": "Blazor"
+  },
+  {
+    "Id": 3,
+    "Name": "JavaScript"
+  }
+]
