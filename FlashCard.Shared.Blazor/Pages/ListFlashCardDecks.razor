@@ -25,6 +25,7 @@
         {
             var thisFlashCardDecks = FlashCardDecks;
             <MudItem xs="12" sm="6" md="4" lg="3">
+                <Animate Animation="Animations.FlipDown" Duration="TimeSpan.FromSeconds(0.5)">
                 <MudCard Class="d-flex flex-column mud-height-full" @onclick="@(e => OnCardClick(FlashCardDecks))">
                     <MudCardContent>
                                @*  <MudText Typo="Typo.body2"><strong>Id:</strong> @FlashCardDecks.Id</MudText> *@
@@ -36,6 +37,7 @@
                         <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnDelete(thisFlashCardDecks))">Delete</MudButton>
                     </MudCardActions>
                 </MudCard>
+                </Animate>
             </MudItem>
         }
     </MudGrid>

@@ -27,33 +27,37 @@
             <MudItem xs="12" sm="6" md="4" lg="3">
                 @if (FlashCards.ShowQuestion)
                 {
-                    <MudCard Class="d-flex flex-column mud-height-full">
-                        <MudCardContent>
-                            <MudText Typo="Typo.h6" Class="mb-2">@FlashCards.FlashCardDecks?.Name</MudText>
-                            <MudText Typo="Typo.h4" Style="width: 300px; height: 200px; overflow: auto;">@FlashCards.Question</MudText>
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => ToggleProperty(FlashCards))">Show Answer</MudButton>
-                        </MudCardContent>
-                        <MudCardActions Class="mt-auto">
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnEdit(thisFlashCards))">Edit</MudButton>
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnDelete(thisFlashCards))">Delete</MudButton>
-                        </MudCardActions>
-                    </MudCard>
+                    <Animate Animation="Animations.FlipUp" Duration="TimeSpan.FromSeconds(0.5)">
+                        <MudCard Class="d-flex flex-column mud-height-full">
+                            <MudCardContent>
+                                <MudText Typo="Typo.h6" Class="mb-2">@FlashCards.FlashCardDecks?.Name</MudText>
+                                <MudText Typo="Typo.h4" Style="width: 300px; height: 200px; overflow: auto;">@FlashCards.Question</MudText>
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => ToggleProperty(FlashCards))">Show Answer</MudButton>
+                            </MudCardContent>
+                            <MudCardActions Class="mt-auto">
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnEdit(thisFlashCards))">Edit</MudButton>
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnDelete(thisFlashCards))">Delete</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </Animate>
                 }
                 else
                 {
-                    <MudCard Class="d-flex flex-column mud-height-full">
-                        <MudCardContent>
-                            <MudText Typo="Typo.h6" Class="mb-2">@FlashCards.FlashCardDecks?.Name</MudText>
-                            <MudText Typo="Typo.h6" Style="width: 300px; height: 200px; overflow: auto;">@FlashCards.Answer</MudText>
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => ToggleProperty(FlashCards))">Show Question</MudButton>
-                            <MudButton Variant="Variant.Text" Color="Color.Success" OnClick="@(e => SaveCorrect(FlashCards))">Correct</MudButton>
-                            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(e => SaveInCorrect(FlashCards))">Wrong</MudButton>
-                        </MudCardContent>
-                        <MudCardActions Class="mt-auto">
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnEdit(thisFlashCards))">Edit</MudButton>
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnDelete(thisFlashCards))">Delete</MudButton>
-                        </MudCardActions>
-                    </MudCard>
+                    <Animate Animation="Animations.FlipDown" Duration="TimeSpan.FromSeconds(0.5)">
+                        <MudCard Class="d-flex flex-column mud-height-full">
+                            <MudCardContent>
+                                <MudText Typo="Typo.h6" Class="mb-2">@FlashCards.FlashCardDecks?.Name</MudText>
+                                <MudText Typo="Typo.h6" Style="width: 300px; height: 200px; overflow: auto;">@FlashCards.Answer</MudText>
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => ToggleProperty(FlashCards))">Show Question</MudButton>
+                                <MudButton Variant="Variant.Text" Color="Color.Success" OnClick="@(e => SaveCorrect(FlashCards))">Correct</MudButton>
+                                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(e => SaveInCorrect(FlashCards))">Wrong</MudButton>
+                            </MudCardContent>
+                            <MudCardActions Class="mt-auto">
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnEdit(thisFlashCards))">Edit</MudButton>
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(e => OnDelete(thisFlashCards))">Delete</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </Animate>
                 }
             </MudItem>
         }
@@ -71,7 +75,7 @@
     public long Id { get; set; } = default!;
     private FlashCardScoring record = new();
     private ApplicationUserDto? user;
-    
+
     // Begin cards
     private const int PageSize = 10;
     private AppService.ODataResult<FlashCards>? FlashCardsResult;
@@ -111,6 +115,7 @@
         {
             pageCount = 1;
         }
+        
         StateHasChanged();
     }
     // End cards
