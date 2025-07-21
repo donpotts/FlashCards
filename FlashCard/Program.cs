@@ -48,7 +48,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Flash Cards 2024 API",
+        Title = "Flash Cards API",
         Version = "v1"
     });
 
@@ -255,17 +255,17 @@ using (var scope = app.Services.CreateScope())
                 ctx.SaveChanges();
             }
         }
-        if (File.Exists("FlashCardScoring.Data.json"))
-        {
-            var json = File.ReadAllText("FlashCardScoring.Data.json");
-            var data = JsonSerializer.Deserialize<FlashCardScoring[]>(json);
+        //if (File.Exists("FlashCardScoring.Data.json"))
+        //{
+        //    var json = File.ReadAllText("FlashCardScoring.Data.json");
+        //    var data = JsonSerializer.Deserialize<FlashCardScoring[]>(json);
 
-            if (data != null)
-            {
-                ctx.FlashCardScoring.AddRange(data);
-                ctx.SaveChanges();
-            }
-        }
+        //    if (data != null)
+        //    {
+        //        ctx.FlashCardScoring.AddRange(data);
+        //        ctx.SaveChanges();
+        //    }
+        //}
         if (File.Exists("FlashCards.Data.json"))
         {
             var json = File.ReadAllText("FlashCards.Data.json");

@@ -31,6 +31,7 @@
         <MudText Typo="Typo.body2"><strong>FlashCardsId:</strong> @FlashCardScoring.FlashCardsId</MudText>
         <MudText Typo="Typo.body2"><strong>IsCorrect:</strong> @FlashCardScoring.IsCorrect</MudText>
         <MudText Typo="Typo.body2"><strong>AttemptDate:</strong> @FlashCardScoring.AttemptDate</MudText>
+        <MudText Typo="Typo.body2"><strong>Deck Name:</strong> @FlashCardScoring.FlashCards?.FlashCardDecks?.Name</MudText>
 
                     </MudCardContent>
                     <MudCardActions Class="mt-auto">
@@ -71,7 +72,7 @@
      {
          var skip = (selectedPage - 1) * PageSize;
 
-         FlashCardScoringResult = await AppService.ListFlashCardScoringODataAsync(PageSize, skip, "", "", count: true, null);
+         FlashCardScoringResult = await AppService.ListFlashCardScoringODataAsync(PageSize, skip, "", "", count: true, "FlashCards($expand=FlashCardDecks)");
 
          if (FlashCardScoringResult?.Count.HasValue ?? false)
          {

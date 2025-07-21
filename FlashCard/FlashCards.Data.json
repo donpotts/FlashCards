@@ -1,64 +1,71 @@
 [
   {
     "Id": 1,
-    "Question": "Q1",
-    "Answer": "A",
+    "Question": "What is a delegate in C#?",
+    "Answer": "A delegate is a type that represents references to methods with a specific parameter list and return type.",
     "FlashCardDecksId": 1,
     "FlashCardScoringId": 1
   },
   {
     "Id": 2,
-    "Question": "Q2",
-    "Answer": "A",
+    "Question": "What is the purpose of the 'using' statement in C#?",
+    "Answer": "The 'using' statement is used to ensure that IDisposable objects are properly disposed of.",
     "FlashCardDecksId": 1,
     "FlashCardScoringId": 1
   },
   {
     "Id": 3,
-    "Question": "Q3",
-    "Answer": "A",
+    "Question": "What is LINQ in C#?",
+    "Answer": "LINQ (Language Integrated Query) is a set of methods and syntax for querying collections in a consistent way.",
     "FlashCardDecksId": 1,
     "FlashCardScoringId": 1
   },
   {
     "Id": 4,
-    "Question": "Q4",
-    "Answer": "A",
-    "FlashCardDecksId": 2,
+    "Question": "What is a `Span<T>` in C#?",
+    "Answer": "`Span<T>` is a stack-only type that allows slicing and working with contiguous memory regions without allocations.",
+    "FlashCardDecksId": 1,
     "FlashCardScoringId": 1
   },
   {
     "Id": 5,
-    "Question": "Q5",
-    "Answer": "A",
+    "Question": "What is Blazor?",
+    "Answer": "Blazor is a framework for building interactive web UIs using C# instead of JavaScript.",
     "FlashCardDecksId": 2,
     "FlashCardScoringId": 1
   },
   {
     "Id": 6,
-    "Question": "Q6",
-    "Answer": "A",
+    "Question": "What are the two main hosting models for Blazor?",
+    "Answer": "Blazor Server and Blazor WebAssembly.",
     "FlashCardDecksId": 2,
     "FlashCardScoringId": 1
   },
   {
     "Id": 7,
-    "Question": "Q7",
-    "Answer": "A",
-    "FlashCardDecksId": 3,
+    "Question": "How does Blazor handle dependency injection?",
+    "Answer": "Blazor uses the built-in .NET Core dependency injection system, allowing services to be registered and injected into components.",
+    "FlashCardDecksId": 2,
     "FlashCardScoringId": 1
   },
   {
     "Id": 8,
-    "Question": "Q8",
-    "Answer": "A",
+    "Question": "What is the difference between 'var' and 'let' in JavaScript?",
+    "Answer": "'var' is function-scoped, while 'let' is block-scoped.",
     "FlashCardDecksId": 3,
     "FlashCardScoringId": 1
   },
   {
     "Id": 9,
-    "Question": "Q9",
-    "Answer": "A",
+    "Question": "What is a promise in JavaScript?",
+    "Answer": "A promise is an object representing the eventual completion or failure of an asynchronous operation.",
+    "FlashCardDecksId": 3,
+    "FlashCardScoringId": 1
+  },
+  {
+    "Id": 10,
+    "Question": "What is the purpose of the 'this' keyword in JavaScript?",
+    "Answer": "The 'this' keyword refers to the object it belongs to, depending on the context in which it is used.",
     "FlashCardDecksId": 3,
     "FlashCardScoringId": 1
   }

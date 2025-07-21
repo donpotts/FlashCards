@@ -12,6 +12,20 @@
     <MudText Typo="Typo.h3">Flash Cards</MudText>
 </div>
 
+<!-- Scoring Summary -->
+@if (scoreSummary != null)
+{
+    <MudPaper Class="pa-4 mb-4" Elevation="2">
+        <MudText Typo="Typo.h5">Your Score Summary</MudText>
+        <MudText Typo="Typo.body1">Deck: @scoreSummary.DeckName</MudText>
+        <MudText Typo="Typo.body1">User: @scoreSummary.UserName</MudText>
+        <MudText Typo="Typo.body1">Correct: @scoreSummary.Correct</MudText>
+        <MudText Typo="Typo.body1">Incorrect: @scoreSummary.Incorrect</MudText>
+        <MudText Typo="Typo.body1">Percentage: @scoreSummary.Percentage.ToString("F1")%</MudText>
+        <MudText Typo="Typo.body1">Grade: @scoreSummary.LetterGrade</MudText>
+    </MudPaper>
+}
+
 <MudStack AlignItems="AlignItems.End" Class="mb-3">
     <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.AddCircleOutline" Color="Color.Primary" OnClick="@(e => OnAdd())">Add</MudButton>
 </MudStack>
@@ -76,6 +90,9 @@
     private FlashCardScoring record = new();
     private ApplicationUserDto? user;
 
+    // Scoring summary model
+    private ScoreSummary? scoreSummary;
+
     // Begin cards
     private const int PageSize = 10;
     private AppService.ODataResult<FlashCards>? FlashCardsResult;
@@ -93,12 +110,14 @@
             Snackbar.Add(ex.Message, Severity.Error);
         }
         await ReloadDataAsync();
+        await LoadScoreSummaryAsync();
     }
 
     private async Task OnSelectedChangedAsync(int selected)
     {
         selectedPage = selected;
         await ReloadDataAsync();
+        await LoadScoreSummaryAsync();
     }
 
     private async Task ReloadDataAsync()
@@ -115,10 +134,43 @@
         {
             pageCount = 1;
         }
-        
         StateHasChanged();
     }
     // End cards
+
+    // Load and calculate the user's score summary for this deck
+    private async Task LoadScoreSummaryAsync()
+    {
+        if (user == null) return;
+
+        string filter = $"UserId eq '{user.Id}' and FlashCards/FlashCardDecks/Id eq {Id}";
+        var scoringResult = await AppService.ListFlashCardScoringODataAsync(null, null, null, filter, false, "FlashCards");
+        var scoring = scoringResult?.Value?.ToList() ?? new List<FlashCardScoring>();
+
+        int correct = scoring.Count(x => x.IsCorrect == true);
+        int incorrect = scoring.Count(x => x.IsCorrect == false);
+        int total = correct + incorrect;
+        double pct = total > 0 ? (double)correct / total * 100 : 0;
+        string grade = pct >= 90 ? "A" : pct >= 80 ? "B" : pct >= 70 ? "C" : pct >= 60 ? "D" : "F";
+
+        // Fetch FlashCardDecks data separately
+        var deck = await AppService.GetFlashCardDecksByIdAsync(Id);
+        var deckName = deck?.Name ?? "Unknown Deck";
+
+        // Retrieve username using AuthenticationStateProvider
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userName = authState.User.Identity?.Name ?? "Unknown User";
+
+        scoreSummary = new ScoreSummary
+        {
+            Correct = correct,
+            Incorrect = incorrect,
+            Percentage = pct,
+            LetterGrade = grade,
+            DeckName = deckName,
+            UserName = userName
+        };
+    }
 
     private string GetAbsoluteUri(string uri)
     {
@@ -148,6 +200,7 @@
         if (!result.Canceled)
         {
             await ReloadDataAsync();
+            await LoadScoreSummaryAsync();
         }
     }
 
@@ -161,6 +214,7 @@
         if (!result.Canceled)
         {
             await ReloadDataAsync();
+            await LoadScoreSummaryAsync();
         }
     }
 
@@ -178,6 +232,7 @@
             {
                 await AppService.DeleteFlashCardsAsync(record.Id!.Value);
                 await ReloadDataAsync();
+                await LoadScoreSummaryAsync();
             }
             catch (Exception ex)
             {
@@ -201,6 +256,8 @@
             record.IsCorrect = true;
             record.UserId = user?.Id;
             await AppService.InsertFlashCardScoringAsync(record);
+            await LoadScoreSummaryAsync();
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -218,10 +275,23 @@
             record.IsCorrect = false;
             record.UserId = user?.Id;
             await AppService.InsertFlashCardScoringAsync(record);
+            await LoadScoreSummaryAsync();
+            StateHasChanged();
         }
         catch (Exception ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }
+    }
+
+    // Helper class for score summary
+    private class ScoreSummary
+    {
+        public int Correct { get; set; }
+        public int Incorrect { get; set; }
+        public double Percentage { get; set; }
+        public string LetterGrade { get; set; } = string.Empty;
+        public string DeckName { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
     }
 }

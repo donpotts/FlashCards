@@ -504,4 +504,30 @@ public class AppService(
 
         return await UploadImageAsync(stream, Convert.ToInt32(image.Size), image.ContentType);
     }
+
+    public async Task ResetUserScoringAsync(string userId)
+    {
+        var token = await authenticationStateProvider.GetBearerTokenAsync()
+            ?? throw new Exception("Not authorized");
+
+        HttpRequestMessage request = new(HttpMethod.Delete, $"/api/flashcardscoring/reset/{userId}");
+        request.Headers.Authorization = new("Bearer", token);
+
+        var response = await httpClient.SendAsync(request);
+
+        await HandleResponseErrorsAsync(response);
+    }
+
+    public async Task<HttpResponseMessage> ResetUserScoringForDeckAsync(string userId, long deckId)
+    {
+        var token = await authenticationStateProvider.GetBearerTokenAsync()
+            ?? throw new Exception("Not authorized");
+
+        HttpRequestMessage request = new(HttpMethod.Post, $"/api/flashcardscoring/reset?userId={userId}&deckId={deckId}");
+        request.Headers.Authorization = new("Bearer", token);
+
+        var response = await httpClient.SendAsync(request);
+
+        return response;
+    }
 }

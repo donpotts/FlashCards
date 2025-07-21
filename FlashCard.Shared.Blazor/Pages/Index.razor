@@ -1,7 +1,147 @@
 @page "/"
+@using System.Security.Claims
+@inject AppService AppService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <div class="mb-3">
-    <MudText Typo="Typo.h3">Hello, World!</MudText>
+    @if (isAuthenticated)
+    {
+        <MudText Typo="Typo.h3">Welcome, @userName!</MudText>
+    }
+    else
+    {
+        <MudText Typo="Typo.h3">Welcome to Flash Cards!</MudText>
+        <MudText Typo="Typo.body1">This application helps you manage and score your flash cards effectively.</MudText>
+    }
 </div>
 
-<MudText>Welcome to your new app.</MudText>
+@if (isAuthenticated && userStatsList != null)
+{
+    @foreach (var userStats in userStatsList)
+    {
+        <MudPaper Class="pa-4 mb-4" Elevation="2">
+            <MudText Typo="Typo.h5">Statistics for @userStats.DeckName</MudText>
+            <MudText Typo="Typo.body1">Total Correct: @userStats.TotalCorrect</MudText>
+            <MudText Typo="Typo.body1">Total Incorrect: @userStats.TotalIncorrect</MudText>
+            <MudText Typo="Typo.body1">Not Answered: @userStats.NotAnswered</MudText>
+            <MudText Typo="Typo.body1">Overall Percentage: @userStats.Percentage.ToString("F1")%</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete" OnClick="() => ResetStatsForDeck((long)userStats.DeckId)" Class="mt-3">Reset Stats</MudButton>
+        </MudPaper>
+    }
+}
+
+@code {
+    private string userName = string.Empty;
+    private bool isAuthenticated = false;
+    private List<UserStats> userStatsList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Fetch the logged-in user's details
+            var user = await AppService.GetUserAsync();
+
+            if (user != null)
+            {
+                isAuthenticated = true;
+                userName = user.Email ?? "User";
+
+                // Fetch scoring data for the current user
+                await LoadUserScoreSummaryAsync(user.Id!);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching user or scoring data: {ex.Message}");
+        }
+    }
+
+    private async Task LoadUserScoreSummaryAsync(string userId)
+    {
+        try
+        {
+            // Fetch all flash card decks
+            var allDecksResult = await AppService.ListFlashCardDecksODataAsync(null, null, null, null, false, null);
+            var allDecks = allDecksResult?.Value?.ToList() ?? new List<FlashCardDecks>();
+
+            userStatsList.Clear();
+
+            foreach (var deck in allDecks)
+            {
+                // Fetch all flash cards for the current deck
+                var allFlashCardsResult = await AppService.ListFlashCardsODataAsync(null, null, null, $"FlashCardDecks/Id eq {deck.Id}", false, null);
+                var allFlashCards = allFlashCardsResult?.Value?.ToList() ?? new List<FlashCards>();
+
+                // Fetch scoring data for the current user and deck
+                var scoringResult = await AppService.ListFlashCardScoringODataAsync(null, null, null, $"UserId eq '{userId}' and FlashCards/FlashCardDecks/Id eq {deck.Id}", false, null);
+                var scoring = scoringResult?.Value?.ToList() ?? new List<FlashCardScoring>();
+
+                int totalCorrect = scoring.Count(x => x.IsCorrect == true);
+                int totalIncorrect = scoring.Count(x => x.IsCorrect == false);
+                int notAnswered = allFlashCards.Count - (totalCorrect + totalIncorrect); // Cards not answered
+                double percentage = allFlashCards.Count > 0 ? (double)totalCorrect / allFlashCards.Count * 100 : 0;
+
+                userStatsList.Add(new UserStats
+                {
+                    DeckId = deck.Id!.Value, // Ensure DeckId is non-nullable
+                    DeckName = deck.Name ?? "Unknown Deck",
+                    TotalCorrect = totalCorrect,
+                    TotalIncorrect = totalIncorrect,
+                    NotAnswered = notAnswered,
+                    Percentage = percentage
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching scoring data: {ex.Message}");
+        }
+    }
+
+    private async void ResetStatsForDeck(long deckId)
+    {
+        var deckName = userStatsList.FirstOrDefault(x => x.DeckId == deckId)?.DeckName ?? "Unknown Deck";
+
+        var confirm = await DialogService.ShowMessageBox(
+            "Confirm Reset",
+            $"Are you sure you want to reset your stats for the deck '{deckName}'? This action cannot be undone.",
+            "Yes",
+            "No");
+
+        if (confirm == true)
+        {
+            try
+            {
+                var user = await AppService.GetUserAsync();
+                if (user != null)
+                {
+                    // Reset stats for the specific deck
+                    await AppService.ResetUserScoringForDeckAsync(user.Id!, deckId);
+
+                    // Reload the stats explicitly
+                    await LoadUserScoreSummaryAsync(user.Id!);
+                    StateHasChanged();
+
+                    Snackbar.Add($"Your stats for the deck '{deckName}' have been reset.", Severity.Success);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error resetting stats for the deck '{deckName}': {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private class UserStats
+    {
+        public long DeckId { get; set; }
+        public string DeckName { get; set; } = string.Empty;
+        public int TotalCorrect { get; set; }
+        public int TotalIncorrect { get; set; }
+        public int NotAnswered { get; set; }
+        public double Percentage { get; set; }
+    }
+}

@@ -151,12 +151,32 @@
             {
                 await AppService.DeleteFlashCardsAsync(record.Id!.Value);
                 await ReloadDataAsync();
+                await UpdateStatsAsync(); // Refresh stats after deletion
+                StateHasChanged(); // Ensure the UI updates
             }
             catch (Exception ex)
             {
                 Snackbar.Add(ex.Message, Severity.Error);
             }
         }
+    }
+
+    private async Task UpdateStatsAsync()
+    {
+        if (FlashCardsResult?.Value == null) return;
+
+        // Example: Recalculate stats based on the current flash cards
+        int totalFlashCards = FlashCardsResult.Value.Count();
+        int totalCorrect = FlashCardsResult.Value.Count(fc => fc.FlashCardScoring?.IsCorrect == true);
+        int totalIncorrect = totalFlashCards - totalCorrect;
+
+        // Display the updated stats (you can bind these to the UI if needed)
+        Console.WriteLine($"Total Flash Cards: {totalFlashCards}");
+        Console.WriteLine($"Total Correct: {totalCorrect}");
+        Console.WriteLine($"Total Incorrect: {totalIncorrect}");
+
+        // If you have UI elements to display these stats, update them here
+        StateHasChanged();
     }
 
     private void ToggleProperty()

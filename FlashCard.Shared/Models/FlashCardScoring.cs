@@ -23,4 +23,7 @@ public class FlashCardScoring
 
     [DataMember]
     public DateTime? AttemptDate { get; set; }
+
+    [DataMember]
+    public FlashCards? FlashCards { get; set; }
 }

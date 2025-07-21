@@ -29,4 +29,7 @@ public class ApplicationUserDto
     public string? CompanyName { get; set; }
 
     public string? Photo { get; set; }
+
+    [Display(Name = "User Name")]
+    public string? UserName { get; set; }
 }
